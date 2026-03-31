@@ -30,4 +30,11 @@ router.put(
 );
 router.put("/notificacoes/:id/lida", auth, notificacoesController.marcarLida);
 
+// Categorias
+router.get("/categorias", auth, async (req, res) => {
+  const pool = require("../config/database");
+  const result = await pool.query("SELECT * FROM categorias ORDER BY nome");
+  res.json(result.rows);
+});
+
 module.exports = router;
