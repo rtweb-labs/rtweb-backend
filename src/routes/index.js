@@ -37,4 +37,47 @@ router.get("/categorias", auth, async (req, res) => {
   res.json(result.rows);
 });
 
+// Funcionários
+router.get("/funcionarios", auth, async (req, res) => {
+  const pool = require("../config/database");
+  const result = await pool.query(
+    "SELECT id, nome, login, cargo, ativo, criado_em FROM usuarios WHERE ativo = true ORDER BY nome",
+  );
+  res.json(result.rows);
+});
+
+router.post("/funcionarios", auth, async (req, res) => {
+  const pool = require("../config/database");
+  const bcrypt = require("bcrypt");
+  const { nome, login, senha, cargo } = req.body;
+  if (!nome || !login || !senha)
+    return res.status(400).json({ erro: "Preencha todos os campos" });
+  const hash = await bcrypt.hash(senha, 10);
+  const result = await pool.query(
+    "INSERT INTO usuarios (nome, login, senha, cargo) VALUES ($1,$2,$3,$4) RETURNING id, nome, login, cargo",
+    [nome, login, hash, cargo || "funcionario"],
+  );
+  res.status(201).json(result.rows[0]);
+});
+
+router.put("/funcionarios/:id", auth, async (req, res) => {
+  const pool = require("../config/database");
+  const bcrypt = require("bcrypt");
+  const { nome, login, senha, cargo } = req.body;
+  const { id } = req.params;
+  if (senha) {
+    const hash = await bcrypt.hash(senha, 10);
+    await pool.query(
+      "UPDATE usuarios SET nome=$1, login=$2, senha=$3, cargo=$4 WHERE id=$5",
+      [nome, login, hash, cargo, id],
+    );
+  } else {
+    await pool.query(
+      "UPDATE usuarios SET nome=$1, login=$2, cargo=$3 WHERE id=$4",
+      [nome, login, cargo, id],
+    );
+  }
+  res.json({ mensagem: "Funcionário atualizado" });
+});
+
 module.exports = router;
