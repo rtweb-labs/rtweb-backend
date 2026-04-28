@@ -44,4 +44,45 @@ const listar = async (req, res) => {
   }
 };
 
-module.exports = { listar };
+// GET /historico/grafico
+const grafico = async (req, res) => {
+  try {
+    const resultado = await pool.query(`
+      SELECT
+        TO_CHAR(criado_em, 'Mon') AS mes,
+        EXTRACT(MONTH FROM criado_em) AS mes_num,
+        EXTRACT(YEAR FROM criado_em) AS ano,
+        SUM(CASE WHEN tipo = 'entrada' THEN quantidade ELSE 0 END) AS entradas,
+        SUM(CASE WHEN tipo = 'saida' THEN quantidade ELSE 0 END) AS saidas
+      FROM movimentacoes
+      WHERE criado_em >= NOW() - INTERVAL '9 months'
+      GROUP BY mes, mes_num, ano
+      ORDER BY ano, mes_num
+    `);
+    res.json(resultado.rows);
+  } catch (erro) {
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+};
+
+// GET /historico/recentes
+const recentes = async (req, res) => {
+  try {
+    const resultado = await pool.query(`
+      SELECT DISTINCT ON (m.produto_id)
+        p.nome,
+        m.tipo,
+        m.quantidade,
+        m.criado_em
+      FROM movimentacoes m
+      JOIN produtos p ON m.produto_id = p.id
+      ORDER BY m.produto_id, m.criado_em DESC
+      LIMIT 3
+    `);
+    res.json(resultado.rows);
+  } catch (erro) {
+    res.status(500).json({ erro: "Erro interno do servidor" });
+  }
+};
+
+module.exports = { listar, grafico, recentes };

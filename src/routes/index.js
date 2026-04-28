@@ -21,6 +21,9 @@ router.put("/produtos/:id", auth, produtosController.atualizar);
 router.delete("/produtos/:id", auth, produtosController.deletar);
 
 router.get("/historico", auth, historicoController.listar);
+router.get("/historico", auth, historicoController.listar);
+router.get("/historico/grafico", auth, historicoController.grafico);
+router.get("/historico/recentes", auth, historicoController.recentes);
 
 router.get("/notificacoes", auth, notificacoesController.listar);
 router.put(
