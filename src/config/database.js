@@ -9,8 +9,9 @@ require("dotenv").config();
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
-    rejectUnauthorized: false, // necessário para conectar ao Railway
+    rejectUnauthorized: false,
   },
+  family: 4, // força IPv4
 });
 
 // Testa a conexão quando o servidor iniciar
