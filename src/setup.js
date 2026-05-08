@@ -51,6 +51,13 @@ const criarTabelas = async () => {
       );
     `);
 
+    // Insere categorias padrão
+    await pool.query(`
+      INSERT INTO categorias (nome) VALUES
+        ('Alimentos'), ('Bebidas'), ('Limpeza'), ('Higiene'), ('Outros')
+      ON CONFLICT (nome) DO NOTHING;
+    `);
+
     const bcrypt = require("bcrypt");
     const hash = await bcrypt.hash("admin123", 10);
     await pool.query(
